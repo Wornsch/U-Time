@@ -3,6 +3,7 @@ services:
     name: u-time
     runtime: node
     plan: free
+    region: frankfurt
     buildCommand: npm install && npm run build
     startCommand: npm run preview
     autoDeploy: true
