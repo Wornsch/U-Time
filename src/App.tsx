@@ -418,7 +418,9 @@ function App() {
     const mode = lineModesByName.get(line);
     return transportFilter === "all" || mode === transportFilter;
   }) ?? [];
-  const nextCountdown = departureGroups[0]?.departures[0]?.countdown ?? null;
+  const nextGroup = departureGroups[0] ?? null;
+  const nextDeparture = nextGroup?.departures[0] ?? null;
+  const nextCountdown = nextDeparture?.countdown ?? null;
   const emptyDepartureMessage = !selectedStation ? "Station auswählen."
     : transportFilter === "all" ? "Keine aktuellen Abfahrten."
     : `Keine ${modeLabel(transportFilter)}-Abfahrten gefunden.`;
@@ -592,9 +594,16 @@ function App() {
                     {nextCountdown === null ? "—" : nextCountdown <= 0 ? "jetzt" : `${nextCountdown} min`}
                   </strong>
                 </div>
-                <div>
-                  <span className="hero-label">Steige</span>
-                  <strong>{selectedStation.stopCount}</strong>
+                <div className="hero-direction">
+                  <span className="hero-label">Richtung</span>
+                  {nextGroup ? (
+                    <span className="hero-direction-summary">
+                      <LineBadge line={nextGroup.line} mode={nextGroup.type} />
+                      <span>{nextGroup.towards}</span>
+                    </span>
+                  ) : (
+                    <span className="hero-empty">—</span>
+                  )}
                 </div>
                 <div className="hero-actions">
                   <button className="icon-button" type="button" onClick={() => void refreshDepartures()} disabled={!selectedStation || isLoadingDepartures} aria-label="Aktualisieren" title="Aktualisieren">
