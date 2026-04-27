@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: u-time
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    autoDeploy: true

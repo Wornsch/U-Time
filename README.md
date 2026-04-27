@@ -93,6 +93,14 @@ Ohne Mac ist die kostenlose und unkomplizierte Variante die installierbare Web-A
 
 Danach liegt U-Time mit eigenem Icon auf dem Home Screen und startet ohne Safari-Chrome.
 
+Ein unkomplizierter kostenloser Deployment-Weg ist Render:
+
+1. Repository zu GitHub pushen.
+2. Bei Render `New` > `Blueprint` waehlen.
+3. Das U-Time-Repository verbinden.
+4. Render nutzt `render.yaml`, baut die App und startet `npm run preview`.
+5. Die `onrender.com`-URL auf dem iPhone in Safari oeffnen und zum Home-Bildschirm hinzufuegen.
+
 Kurzfassung auf dem Mac:
 
 ```bash
