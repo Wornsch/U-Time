@@ -585,10 +585,42 @@ a { color: inherit; }
   letter-spacing: -0.025em;
   line-height: 1.05;
 }
-.departure-line-strip {
+.departure-line-filter {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  gap: 5px;
+  align-items: center;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+}
+.departure-line-button {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: 7px;
+  padding: 3px;
+  transition: all 0.15s;
+}
+.departure-line-button.all {
+  min-height: 30px;
+  padding: 0 11px;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 700;
+}
+.departure-line-button:hover {
+  border-color: var(--ink);
+  background: var(--surface);
+}
+.departure-line-button.active {
+  border-color: var(--ink);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.departure-line-static {
+  display: inline-flex;
   align-items: center;
 }
 

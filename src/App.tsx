@@ -291,6 +291,7 @@ function App() {
   const [favoritesTab, setFavoritesTab] = useState<FavoritesTab>("stations");
   const [favoriteFeeds, setFavoriteFeeds] = useState<Record<string, DepartureFeed>>({});
   const [favoriteFeedError, setFavoriteFeedError] = useState<string | null>(null);
+  const [selectedDepartureLine, setSelectedDepartureLine] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "error">("idle");
   const [mapZoom, setMapZoom] = useState(12);
@@ -324,6 +325,10 @@ function App() {
     const set = new Set(favoriteIds);
     return network.stations.filter((s) => set.has(s.id));
   }, [favoriteIds, network]);
+
+  useEffect(() => {
+    setSelectedDepartureLine(null);
+  }, [selectedStationId, transportFilter]);
 
   useEffect(() => {
     let active = true;
@@ -439,17 +444,21 @@ function App() {
     });
   }, [favoriteIds, mapZoom, nearbyStations, network, searchQuery, searchResults, selectedStation, transportFilter]);
 
-  const departureGroups = useMemo(() => {
-    if (!departures) return [];
-    return createDepartureGroups(departures.departures, transportFilter);
-  }, [departures, transportFilter]);
-
   const selectedIsFavorite = selectedStation ? favoriteIds.includes(selectedStation.id) : false;
   const lastUpdated = departures?.fetchedAt.toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   const visibleStationLines = selectedStation?.lines.filter((line) => {
     const mode = lineModesByName.get(line);
     return transportFilter === "all" || mode === transportFilter;
   }) ?? [];
+  const activeDepartureLine = selectedDepartureLine && visibleStationLines.includes(selectedDepartureLine) ? selectedDepartureLine : null;
+  const departureGroups = useMemo(() => {
+    if (!departures) return [];
+    const source = activeDepartureLine
+      ? departures.departures.filter((departure) => departure.line === activeDepartureLine)
+      : departures.departures;
+    return createDepartureGroups(source, transportFilter);
+  }, [activeDepartureLine, departures, transportFilter]);
+
   const nextGroup = departureGroups[0] ?? null;
   const nextDeparture = nextGroup?.departures[0] ?? null;
   const nextCountdown = nextDeparture?.countdown ?? null;
@@ -660,11 +669,36 @@ function App() {
             </span>
             <h2>{selectedStation?.name ?? "Station auswählen"}</h2>
             {selectedStation ? (
-              <div className="departure-line-strip">
-                {visibleStationLines.length
-                  ? visibleStationLines.slice(0, 8).map((l) => <LineBadge key={l} line={l} mode={lineModesByName.get(l)} />)
-                  : <span>{modeLabel(transportFilter)}</span>}
-                {visibleStationLines.length > 8 ? <span className="more-lines">+{visibleStationLines.length - 8}</span> : null}
+              <div className="departure-line-filter" aria-label="Abfahrten nach Linie filtern">
+                {visibleStationLines.length > 1 ? (
+                  <>
+                    <button
+                      className={`departure-line-button all ${activeDepartureLine === null ? "active" : ""}`}
+                      type="button"
+                      onClick={() => setSelectedDepartureLine(null)}
+                      aria-pressed={activeDepartureLine === null}
+                    >
+                      Alle
+                    </button>
+                    {visibleStationLines.map((line) => (
+                      <button
+                        key={line}
+                        className={`departure-line-button ${activeDepartureLine === line ? "active" : ""}`}
+                        type="button"
+                        onClick={() => setSelectedDepartureLine(line)}
+                        aria-pressed={activeDepartureLine === line}
+                      >
+                        <LineBadge line={line} mode={lineModesByName.get(line)} />
+                      </button>
+                    ))}
+                  </>
+                ) : visibleStationLines.length === 1 ? (
+                  <span className="departure-line-static">
+                    <LineBadge line={visibleStationLines[0]} mode={lineModesByName.get(visibleStationLines[0])} />
+                  </span>
+                ) : (
+                  <span>{modeLabel(transportFilter)}</span>
+                )}
               </div>
             ) : null}
           </div>
