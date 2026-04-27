@@ -202,7 +202,8 @@ a { color: inherit; }
   grid-template-columns: minmax(320px, 860px);
   justify-content: center;
   align-content: start;
-  overflow: auto;
+  min-height: auto;
+  overflow: visible;
 }
 .app-shell.simple-view .map-stage,
 .app-shell.simple-view .departure-panel {
@@ -212,6 +213,7 @@ a { color: inherit; }
   width: 100%;
   min-height: 0;
   max-height: none;
+  overflow: visible;
 }
 .app-shell.simple-view .section-block {
   overflow: visible;
@@ -223,6 +225,42 @@ a { color: inherit; }
 .app-shell.simple-view .station-button,
 .app-shell.simple-view .favorite-departure-card {
   padding: 14px 0;
+}
+.compact-selected-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.compact-selected-title {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.compact-selected-title strong {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.compact-selected-title span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.compact-line-filter {
+  margin-bottom: 4px;
+}
+.compact-selected-departures {
+  display: flex;
+  flex-direction: column;
+}
+.compact-selected-departures .timeline-row {
+  grid-template-columns: 56px 18px minmax(0, 1fr);
+}
+.compact-empty {
+  padding: 22px 0 8px;
 }
 
 /* ===== SIDE PANEL ===== */
@@ -823,6 +861,12 @@ a { color: inherit; }
   .app-shell {
     height: 100dvh;
     overflow: hidden;
+  }
+
+  .app-shell.simple-view {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
   }
 }
 

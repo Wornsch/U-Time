@@ -280,6 +280,50 @@ function FavoriteDepartureCard({ station, feed, filter, lineModesByName, onSelec
   );
 }
 
+function DepartureLineFilter({ lines, lineModesByName, activeLine, onSelect, fallbackLabel, className = "" }: {
+  lines: string[];
+  lineModesByName: Map<string, TransportMode>;
+  activeLine: string | null;
+  onSelect: (line: string | null) => void;
+  fallbackLabel: string;
+  className?: string;
+}) {
+  const filterClass = className ? `departure-line-filter ${className}` : "departure-line-filter";
+  return (
+    <div className={filterClass} aria-label="Abfahrten nach Linie filtern">
+      {lines.length > 1 ? (
+        <>
+          <button
+            className={`departure-line-button all ${activeLine === null ? "active" : ""}`}
+            type="button"
+            onClick={() => onSelect(null)}
+            aria-pressed={activeLine === null}
+          >
+            Alle
+          </button>
+          {lines.map((line) => (
+            <button
+              key={line}
+              className={`departure-line-button ${activeLine === line ? "active" : ""}`}
+              type="button"
+              onClick={() => onSelect(line)}
+              aria-pressed={activeLine === line}
+            >
+              <LineBadge line={line} mode={lineModesByName.get(line)} />
+            </button>
+          ))}
+        </>
+      ) : lines.length === 1 ? (
+        <span className="departure-line-static">
+          <LineBadge line={lines[0]} mode={lineModesByName.get(lines[0])} />
+        </span>
+      ) : (
+        <span>{fallbackLabel}</span>
+      )}
+    </div>
+  );
+}
+
 function App() {
   const [network, setNetwork] = useState<NetworkData | null>(null);
   const [networkError, setNetworkError] = useState<string | null>(null);
@@ -545,12 +589,60 @@ function App() {
             ) : <p className="status-text">Noch kein Standort aktiv.</p>}
           </section>
 
+          {isSimpleView ? (
+            <section className="section-block compact-selected-section">
+              <div className="section-heading">
+                <h2>Aktuelle Station</h2>
+                <button className="icon-text-button" type="button" onClick={() => void refreshDepartures()} disabled={!selectedStation || isLoadingDepartures}>
+                  <RefreshCw size={15} className={isLoadingDepartures ? "spin" : ""} />
+                  Aktualisieren
+                </button>
+              </div>
+
+              {selectedStation ? (
+                <>
+                  <div className="compact-selected-header">
+                    <span className="compact-selected-title">
+                      <strong>{selectedStation.name}</strong>
+                      <span>{visibleStationLines.slice(0, 8).join(" · ") || modeLabel(transportFilter)}</span>
+                    </span>
+                    <button className={`icon-button ${selectedIsFavorite ? "favorite" : ""}`} type="button" onClick={toggleFavorite} aria-label={selectedIsFavorite ? "Favorit entfernen" : "Favorit hinzufügen"} title={selectedIsFavorite ? "Favorit entfernen" : "Favorit hinzufügen"}>
+                      <Star size={15} fill={selectedIsFavorite ? "currentColor" : "none"} />
+                    </button>
+                  </div>
+
+                  <DepartureLineFilter
+                    lines={visibleStationLines}
+                    lineModesByName={lineModesByName}
+                    activeLine={activeDepartureLine}
+                    onSelect={setSelectedDepartureLine}
+                    fallbackLabel={modeLabel(transportFilter)}
+                    className="compact-line-filter"
+                  />
+
+                  <div className="compact-selected-departures">
+                    {departureGroups.length ? (
+                      departureGroups.slice(0, 6).map((g) => <TimelineRow key={g.id} group={g} />)
+                    ) : (
+                      <div className="empty-state compact-empty">
+                        <Clock3 size={20} />
+                        <span>{isLoadingDepartures ? "Abfahrten werden geladen." : emptyDepartureMessage}</span>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <p className="status-text">Station suchen oder auswählen.</p>
+              )}
+            </section>
+          ) : null}
+
           <section className="section-block">
             <div className="section-heading">
               <h2>{searchQuery ? "Treffer" : "Favoriten"}</h2>
             </div>
 
-            {!searchQuery ? (
+            {!searchQuery && !isSimpleView ? (
               <div className="mini-tabs" aria-label="Favoritenansicht">
                 <button className={favoritesTab === "stations" ? "active" : ""} type="button" onClick={() => setFavoritesTab("stations")}>Stationen</button>
                 <button className={favoritesTab === "departures" ? "active" : ""} type="button" onClick={() => setFavoritesTab("departures")}>Abfahrten</button>
@@ -563,7 +655,7 @@ function App() {
                     <StationButton key={s.id} station={s} selected={s.id === selectedStation?.id}
                       lineModesByName={lineModesByName} filter={transportFilter} onSelect={selectStation} />
                   ))
-                : favoritesTab === "stations"
+                : !isSimpleView && favoritesTab === "stations"
                   ? favoriteStations.map((s) => (
                       <StationButton key={s.id} station={s} selected={s.id === selectedStation?.id}
                         lineModesByName={lineModesByName} filter={transportFilter} onSelect={selectStation} />
@@ -575,7 +667,7 @@ function App() {
             </div>
             {searchQuery && searchResults.length === 0 ? <p className="status-text">Keine Station gefunden.</p> : null}
             {!searchQuery && favoriteStations.length === 0 ? <p className="status-text">Favoriten erscheinen hier.</p> : null}
-            {!searchQuery && favoritesTab === "departures" && favoriteFeedError ? <p className="status-text warning">{favoriteFeedError}</p> : null}
+            {!searchQuery && (isSimpleView || favoritesTab === "departures") && favoriteFeedError ? <p className="status-text warning">{favoriteFeedError}</p> : null}
           </section>
 
           <footer className="data-footer">
@@ -683,37 +775,13 @@ function App() {
             </span>
             <h2>{selectedStation?.name ?? "Station auswählen"}</h2>
             {selectedStation ? (
-              <div className="departure-line-filter" aria-label="Abfahrten nach Linie filtern">
-                {visibleStationLines.length > 1 ? (
-                  <>
-                    <button
-                      className={`departure-line-button all ${activeDepartureLine === null ? "active" : ""}`}
-                      type="button"
-                      onClick={() => setSelectedDepartureLine(null)}
-                      aria-pressed={activeDepartureLine === null}
-                    >
-                      Alle
-                    </button>
-                    {visibleStationLines.map((line) => (
-                      <button
-                        key={line}
-                        className={`departure-line-button ${activeDepartureLine === line ? "active" : ""}`}
-                        type="button"
-                        onClick={() => setSelectedDepartureLine(line)}
-                        aria-pressed={activeDepartureLine === line}
-                      >
-                        <LineBadge line={line} mode={lineModesByName.get(line)} />
-                      </button>
-                    ))}
-                  </>
-                ) : visibleStationLines.length === 1 ? (
-                  <span className="departure-line-static">
-                    <LineBadge line={visibleStationLines[0]} mode={lineModesByName.get(visibleStationLines[0])} />
-                  </span>
-                ) : (
-                  <span>{modeLabel(transportFilter)}</span>
-                )}
-              </div>
+              <DepartureLineFilter
+                lines={visibleStationLines}
+                lineModesByName={lineModesByName}
+                activeLine={activeDepartureLine}
+                onSelect={setSelectedDepartureLine}
+                fallbackLabel={modeLabel(transportFilter)}
+              />
             ) : null}
           </div>
 
