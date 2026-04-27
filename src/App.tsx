@@ -351,8 +351,14 @@ function FavoriteDepartureCard({
           {groups.map((group) => (
             <span className="favorite-time-row" key={group.id}>
               <LineBadge line={group.line} mode={group.type} />
-              <strong>{departureWaitLabel(group.departures[0])}</strong>
-              {group.departures[1] ? <small>{departureWaitLabel(group.departures[1])}</small> : null}
+              <span className="favorite-route">
+                <strong>{group.towards}</strong>
+                <small>{group.platform ? `Steig ${group.platform}` : "Richtung"}</small>
+              </span>
+              <span className="favorite-waits">
+                <strong>{departureWaitLabel(group.departures[0])}</strong>
+                {group.departures[1] ? <small>{departureWaitLabel(group.departures[1])}</small> : null}
+              </span>
             </span>
           ))}
         </span>

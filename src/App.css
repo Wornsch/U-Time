@@ -675,22 +675,50 @@ a {
 
 .favorite-time-row {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
-  min-height: 34px;
+  min-height: 46px;
   padding: 6px 8px;
   border-radius: 8px;
   background: #f5f8fb;
 }
 
-.favorite-time-row strong {
+.favorite-route {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.favorite-route strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.favorite-route small {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.favorite-waits {
+  display: grid;
+  justify-items: end;
+  min-width: 52px;
+  gap: 2px;
+}
+
+.favorite-waits strong {
   color: #0c3b5d;
   font-size: 14px;
   font-weight: 850;
 }
 
-.favorite-time-row small,
+.favorite-waits small,
 .favorite-empty {
   color: var(--text-muted);
   font-size: 12px;
