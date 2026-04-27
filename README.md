@@ -14,6 +14,7 @@ U-Time ist eine moderne Web-App fuer Live-Abfahrten der Wiener Linien. Die App z
 - Favoriten mit eigener Live-Abfahrtsansicht
 - Lokaler Proxy fuer Wiener-Linien-Daten ohne Browser-CORS-Probleme
 - Responsive Layout fuer Desktop und Mobile
+- Native iOS-Huelle via Capacitor fuer private Installation auf dem iPhone
 
 ## Tech Stack
 
@@ -23,6 +24,7 @@ U-Time ist eine moderne Web-App fuer Live-Abfahrten der Wiener Linien. Die App z
 - Leaflet / React Leaflet
 - PapaParse
 - Express
+- Capacitor
 - Wiener Linien Open Data
 
 ## Lokales Setup
@@ -70,9 +72,29 @@ $env:PORT=8080; npm run preview
 ```bash
 npm run dev      # Startet Vite mit Wiener-Linien-Proxy
 npm run build    # TypeScript-Check und Production-Build
+npm run ios:sync # Baut die Web-App und synchronisiert sie ins iOS-Projekt
+npm run ios:open # Oeffnet das iOS-Projekt in Xcode
 npm run preview  # Startet den Express-Preview-Server
 npm run lint     # ESLint-Check
 ```
+
+## Private iOS-App
+
+U-Time kann als native iOS-App mit Capacitor gebaut werden. Fuer die private, kostenlose Installation auf dem eigenen iPhone brauchst du einen Mac mit Xcode und eine normale Apple ID.
+
+Kurzfassung auf dem Mac:
+
+```bash
+npm install
+npm run ios:sync
+npm run ios:open
+```
+
+Danach in Xcode `Signing & Capabilities` auf deine Personal Team stellen, iPhone verbinden und Play druecken.
+
+Ausfuehrliche Anleitung:
+
+[Private iOS-Installation](docs/ios-private-install.md)
 
 ## Datenquelle
 
@@ -92,6 +114,8 @@ Weitere Informationen:
 Die Wiener-Linien-Open-Data-Endpoints liefern keine vollstaendigen CORS-Header fuer direkten Browserzugriff. Deshalb nutzt U-Time lokal `/api/wl/...` als Proxy.
 
 Im Development-Modus uebernimmt Vite den Proxy. Im Production-Preview uebernimmt `server.mjs` denselben Pfad.
+
+In der nativen iOS-App nutzt U-Time Capacitor HTTP und ruft die Wiener-Linien-Endpunkte direkt auf, weil dort kein lokaler Express-Proxy laeuft.
 
 ## Projektstruktur
 

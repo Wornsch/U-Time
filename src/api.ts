@@ -1,4 +1,5 @@
 import Papa from "papaparse";
+import { Capacitor } from "@capacitor/core";
 import type {
   Departure,
   DepartureFeed,
@@ -10,7 +11,16 @@ import type {
 } from "./types";
 import { isValidCoordinate, lineColor, normalizeSearch } from "./utils";
 
-const OGD_BASE = "/api/wl/ogd_realtime/doku/ogd";
+const WIENER_LINIEN_ORIGIN = "https://www.wienerlinien.at";
+const API_PROXY_PREFIX = "/api/wl";
+const OGD_BASE = "/ogd_realtime/doku/ogd";
+
+function apiUrl(path: string): string {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return Capacitor.isNativePlatform()
+    ? `${WIENER_LINIEN_ORIGIN}${normalizedPath}`
+    : `${API_PROXY_PREFIX}${normalizedPath}`;
+}
 
 interface StopPointRow {
   StopID: string;
@@ -121,7 +131,7 @@ function parseCsv<T>(csv: string): T[] {
 }
 
 async function fetchText(path: string): Promise<string> {
-  const response = await fetch(path);
+  const response = await fetch(apiUrl(path));
   if (!response.ok) {
     throw new Error(`HTTP ${response.status} beim Laden von ${path}`);
   }
@@ -382,7 +392,7 @@ export async function fetchDepartures(rbls: number[]): Promise<DepartureFeed> {
   params.append("activateTrafficInfo", "stoerunglang");
   params.append("activateTrafficInfo", "aufzugsinfo");
 
-  const response = await fetch(`/api/wl/ogd_realtime/monitor?${params.toString()}`, {
+  const response = await fetch(apiUrl(`/ogd_realtime/monitor?${params.toString()}`), {
     headers: {
       accept: "application/json",
     },

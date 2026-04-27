@@ -6,10 +6,14 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
+    "ios:sync": "npm run build && cap sync ios",
+    "ios:open": "cap open ios",
     "preview": "node server.mjs",
     "lint": "eslint ."
   },
   "dependencies": {
+    "@capacitor/core": "^8.3.1",
+    "@capacitor/ios": "^8.3.1",
     "@vitejs/plugin-react": "^5.0.4",
     "express": "^5.1.0",
     "leaflet": "^1.9.4",
@@ -21,6 +25,7 @@
     "vite": "^7.1.7"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.3.1",
     "@eslint/js": "^9.36.0",
     "@types/leaflet": "^1.9.20",
     "@types/node": "^24.6.0",
