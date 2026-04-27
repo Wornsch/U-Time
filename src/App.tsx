@@ -412,7 +412,6 @@ function App() {
     return createDepartureGroups(departures.departures, transportFilter);
   }, [departures, transportFilter]);
 
-  const tickerGroups = departureGroups.slice(0, 4);
   const selectedIsFavorite = selectedStation ? favoriteIds.includes(selectedStation.id) : false;
   const lastUpdated = departures?.fetchedAt.toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   const visibleStationLines = selectedStation?.lines.filter((line) => {
@@ -609,27 +608,6 @@ function App() {
             </div>
           ) : null}
 
-          {/* LIVE TICKER (bottom) */}
-          {tickerGroups.length ? (
-            <div className="live-ticker">
-              <div className="live-ticker-label">Live-Ticker</div>
-              <div className="live-ticker-divider" />
-              <div className="live-ticker-items">
-                {tickerGroups.map((g) => {
-                  const main = g.departures[0];
-                  return (
-                    <div key={g.id} className="ticker-item">
-                      <LineBadge line={g.line} mode={g.type} />
-                      <span className="ticker-towards">{g.towards}</span>
-                      <span className={`ticker-time ${(main?.countdown ?? 99) <= 1 ? "soon" : ""}`}>
-                        {main?.countdown === null ? "—" : (main!.countdown! <= 0 ? "jetzt" : `${main!.countdown}m`)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
         </section>
 
         {/* RIGHT: TIMELINE */}

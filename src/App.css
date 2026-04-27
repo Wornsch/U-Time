@@ -465,65 +465,6 @@ a { color: inherit; }
 .icon-button .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* LIVE TICKER bottom strip */
-.live-ticker {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--ink);
-  color: #fff;
-  border-radius: 999px;
-  padding: 8px 16px;
-  box-shadow: var(--shadow-lg);
-  z-index: 500;
-  overflow: hidden;
-}
-.live-ticker-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--accent);
-  flex: 0 0 auto;
-}
-.live-ticker-divider {
-  width: 1px; height: 18px;
-  background: rgba(255, 255, 255, 0.2);
-  flex: 0 0 auto;
-}
-.live-ticker-items {
-  display: flex;
-  gap: 22px;
-  overflow: hidden;
-  flex: 1;
-}
-.ticker-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 0 0 auto;
-}
-.ticker-towards {
-  font-size: 12.5px;
-  font-weight: 500;
-  white-space: nowrap;
-  color: rgba(255, 255, 255, 0.85);
-}
-.ticker-time {
-  font-family: var(--mono);
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #fff;
-  padding: 2px 7px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
-.ticker-time.soon { background: var(--accent); color: #fff; }
-
 .tooltip-lines {
   display: block;
   font-size: 11px;
