@@ -220,29 +220,61 @@ function FavoriteDepartureCard({ station, feed, filter, lineModesByName, onSelec
   station: Station; feed: DepartureFeed | undefined; filter: TransportFilter;
   lineModesByName: Map<string, TransportMode>; onSelect: (station: Station) => void;
 }) {
-  const groups = feed ? createDepartureGroups(feed.departures, filter, 2) : [];
+  const lineOptions = useMemo(
+    () => station.lines.filter((l) => filter === "all" || lineModesByName.get(l) === filter),
+    [filter, lineModesByName, station.lines],
+  );
+  const visibleLines = lineOptions.length ? lineOptions : station.lines;
+  const [selectedLine, setSelectedLine] = useState<string | null>(null);
+  const activeLine = selectedLine && lineOptions.includes(selectedLine) ? selectedLine : lineOptions[0] ?? null;
+  const groups = feed
+    ? createDepartureGroups(feed.departures.filter((d) => !activeLine || d.line === activeLine), filter, 2)
+    : [];
   return (
-    <button className="favorite-departure-card" type="button" onClick={() => onSelect(station)}>
-      <span className="favorite-card-title">
-        <strong>{station.name}</strong>
-        <span>
-          {station.lines.filter((l) => filter === "all" || lineModesByName.get(l) === filter).slice(0, 5).join(" · ") || modeLabel(filter)}
+    <article className="favorite-departure-card">
+      <button className="favorite-card-header" type="button" onClick={() => onSelect(station)}>
+        <span className="favorite-card-title">
+          <strong>{station.name}</strong>
+          <span>
+            {visibleLines.slice(0, 5).join(" · ") || modeLabel(filter)}
+          </span>
         </span>
-      </span>
+      </button>
+      {lineOptions.length > 1 ? (
+        <span className="favorite-line-picker" aria-label={`Linie für ${station.name}`}>
+          {lineOptions.map((line) => (
+            <button
+              key={line}
+              className={`favorite-line-option ${line === activeLine ? "active" : ""}`}
+              type="button"
+              onClick={() => setSelectedLine(line)}
+              aria-pressed={line === activeLine}
+            >
+              <LineBadge line={line} mode={lineModesByName.get(line)} />
+            </button>
+          ))}
+        </span>
+      ) : null}
+
       {groups.length ? (
         <span className="favorite-times">
           {groups.map((g) => (
             <span className="favorite-time-row" key={g.id}>
-              <LineBadge line={g.line} mode={g.type} />
-              <strong>{departureWaitLabel(g.departures[0])}</strong>
-              {g.departures[1] ? <small>{departureWaitLabel(g.departures[1])}</small> : null}
+              <span className="favorite-route">
+                <LineBadge line={g.line} mode={g.type} />
+                <span className="favorite-route-destination">{g.towards}</span>
+              </span>
+              <span className="favorite-time-values">
+                <strong>{departureWaitLabel(g.departures[0])}</strong>
+                {g.departures[1] ? <small>{departureWaitLabel(g.departures[1])}</small> : null}
+              </span>
             </span>
           ))}
         </span>
       ) : (
         <span className="favorite-empty">{feed ? "Keine passenden Abfahrten" : "Lädt..."}</span>
       )}
-    </button>
+    </article>
   );
 }
 
