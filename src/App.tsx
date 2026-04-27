@@ -9,6 +9,7 @@ import {
   RefreshCw,
   Search,
   Star,
+  Smartphone,
   X,
 } from "lucide-react";
 import {
@@ -44,6 +45,7 @@ import {
 } from "./utils";
 
 const FAVORITES_KEY = "u-time:favorites";
+const INSTALL_HINT_KEY = "u-time:install-hint-dismissed";
 const transportFilters: TransportFilter[] = ["ptMetro", "ptTram", "ptBus", "all"];
 const MAX_DEPARTURE_GROUPS = 8;
 const MAX_FAVORITE_FEEDS = 8;
@@ -58,8 +60,6 @@ interface DepartureGroup {
   stationTitle: string;
   departures: Departure[];
 }
-
-type FavoritesTab = "stations" | "departures";
 
 function loadFavoriteIds(): string[] {
   try {
@@ -232,16 +232,22 @@ function FavoriteDepartureCard({ station, feed, filter, lineModesByName, onSelec
   const groups = feed
     ? createDepartureGroups(feed.departures.filter((d) => !activeLine || d.line === activeLine), filter, 2)
     : [];
+  const handleSelect = () => onSelect(station);
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleSelect();
+    }
+  };
+
   return (
-    <article className="favorite-departure-card">
-      <button className="favorite-card-header" type="button" onClick={() => onSelect(station)}>
-        <span className="favorite-card-title">
-          <strong>{station.name}</strong>
-          <span>
-            {visibleLines.slice(0, 5).join(" · ") || modeLabel(filter)}
-          </span>
+    <article className="favorite-departure-card" role="button" tabIndex={0} onClick={handleSelect} onKeyDown={handleKeyDown}>
+      <span className="favorite-card-title">
+        <strong>{station.name}</strong>
+        <span>
+          {visibleLines.slice(0, 5).join(" · ") || modeLabel(filter)}
         </span>
-      </button>
+      </span>
       {lineOptions.length > 1 ? (
         <span className="favorite-line-picker" aria-label={`Linie für ${station.name}`}>
           {lineOptions.map((line) => (
@@ -249,7 +255,11 @@ function FavoriteDepartureCard({ station, feed, filter, lineModesByName, onSelec
               key={line}
               className={`favorite-line-option ${line === activeLine ? "active" : ""}`}
               type="button"
-              onClick={() => setSelectedLine(line)}
+              onClick={(event) => {
+                event.stopPropagation();
+                setSelectedLine(line);
+              }}
+              onKeyDown={(event) => event.stopPropagation()}
               aria-pressed={line === activeLine}
             >
               <LineBadge line={line} mode={lineModesByName.get(line)} />
@@ -334,11 +344,12 @@ function App() {
   const [transportFilter, setTransportFilter] = useState<TransportFilter>("ptMetro");
   const [searchQuery, setSearchQuery] = useState("");
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => loadFavoriteIds());
-  const [favoritesTab, setFavoritesTab] = useState<FavoritesTab>("stations");
   const [favoriteFeeds, setFavoriteFeeds] = useState<Record<string, DepartureFeed>>({});
   const [favoriteFeedError, setFavoriteFeedError] = useState<string | null>(null);
   const [selectedDepartureLine, setSelectedDepartureLine] = useState<string | null>(null);
   const [isSimpleView, setIsSimpleView] = useState(false);
+  const [showMapCard, setShowMapCard] = useState(true);
+  const [showInstallHint, setShowInstallHint] = useState(false);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "error">("idle");
   const [mapZoom, setMapZoom] = useState(12);
@@ -376,6 +387,19 @@ function App() {
   useEffect(() => {
     setSelectedDepartureLine(null);
   }, [selectedStationId, transportFilter]);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem(INSTALL_HINT_KEY) === "1";
+    const standaloneMedia = window.matchMedia("(display-mode: standalone)").matches;
+    const standaloneNavigator = Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
+    const isPhoneViewport = window.matchMedia("(max-width: 760px)").matches;
+    const isTouchDevice = navigator.maxTouchPoints > 0;
+    if (!dismissed && !standaloneMedia && !standaloneNavigator && isPhoneViewport && isTouchDevice) {
+      const id = window.setTimeout(() => setShowInstallHint(true), 900);
+      return () => window.clearTimeout(id);
+    }
+    return undefined;
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -435,6 +459,11 @@ function App() {
 
   const selectStation = useCallback((s: Station) => {
     setSelectedStationId(s.id); setSearchQuery("");
+  }, []);
+
+  const dismissInstallHint = useCallback(() => {
+    localStorage.setItem(INSTALL_HINT_KEY, "1");
+    setShowInstallHint(false);
   }, []);
 
   const toggleFavorite = useCallback(() => {
@@ -642,32 +671,20 @@ function App() {
               <h2>{searchQuery ? "Treffer" : "Favoriten"}</h2>
             </div>
 
-            {!searchQuery && !isSimpleView ? (
-              <div className="mini-tabs" aria-label="Favoritenansicht">
-                <button className={favoritesTab === "stations" ? "active" : ""} type="button" onClick={() => setFavoritesTab("stations")}>Stationen</button>
-                <button className={favoritesTab === "departures" ? "active" : ""} type="button" onClick={() => setFavoritesTab("departures")}>Abfahrten</button>
-              </div>
-            ) : null}
-
             <div className="compact-list">
               {searchQuery
                 ? searchResults.map((s) => (
                     <StationButton key={s.id} station={s} selected={s.id === selectedStation?.id}
                       lineModesByName={lineModesByName} filter={transportFilter} onSelect={selectStation} />
                   ))
-                : !isSimpleView && favoritesTab === "stations"
-                  ? favoriteStations.map((s) => (
-                      <StationButton key={s.id} station={s} selected={s.id === selectedStation?.id}
-                        lineModesByName={lineModesByName} filter={transportFilter} onSelect={selectStation} />
-                    ))
-                  : favoriteStations.slice(0, MAX_FAVORITE_FEEDS).map((s) => (
-                      <FavoriteDepartureCard key={s.id} station={s} feed={favoriteFeeds[s.id]}
-                        filter={transportFilter} lineModesByName={lineModesByName} onSelect={selectStation} />
-                    ))}
+                : favoriteStations.slice(0, MAX_FAVORITE_FEEDS).map((s) => (
+                    <FavoriteDepartureCard key={s.id} station={s} feed={favoriteFeeds[s.id]}
+                      filter={transportFilter} lineModesByName={lineModesByName} onSelect={selectStation} />
+                  ))}
             </div>
             {searchQuery && searchResults.length === 0 ? <p className="status-text">Keine Station gefunden.</p> : null}
             {!searchQuery && favoriteStations.length === 0 ? <p className="status-text">Favoriten erscheinen hier.</p> : null}
-            {!searchQuery && (isSimpleView || favoritesTab === "departures") && favoriteFeedError ? <p className="status-text warning">{favoriteFeedError}</p> : null}
+            {!searchQuery && favoriteFeedError ? <p className="status-text warning">{favoriteFeedError}</p> : null}
           </section>
 
           <footer className="data-footer">
@@ -722,8 +739,22 @@ function App() {
             ) : null}
           </MapContainer>
 
-          {/* HERO OVERLAY (top-left) */}
           {selectedStation ? (
+            <button
+              className={`map-card-toggle ${showMapCard ? "active" : ""}`}
+              type="button"
+              onClick={() => setShowMapCard((current) => !current)}
+              aria-pressed={showMapCard}
+              aria-label={showMapCard ? "Stationskarte ausblenden" : "Stationskarte anzeigen"}
+              title={showMapCard ? "Stationskarte ausblenden" : "Stationskarte anzeigen"}
+            >
+              {showMapCard ? <X size={14} /> : <MapPinned size={14} />}
+              <span>Info</span>
+            </button>
+          ) : null}
+
+          {/* HERO OVERLAY (top-left) */}
+          {selectedStation && showMapCard ? (
             <div className="hero-card">
               <div className="hero-eyebrow">
                 <MapPinned size={12} /> Aktuelle Station
@@ -803,6 +834,28 @@ function App() {
           </div>
         </aside>
       </div>
+
+      {showInstallHint ? (
+        <div className="install-hint-backdrop" role="dialog" aria-modal="true" aria-labelledby="install-hint-title">
+          <div className="install-hint">
+            <div className="install-hint-icon" aria-hidden>
+              <Smartphone size={18} />
+            </div>
+            <div>
+              <h2 id="install-hint-title">U-Time zum Startbildschirm?</h2>
+              <p>In Safari den Teilen-Button tippen und dann „Zum Home-Bildschirm“ wählen.</p>
+              <div className="install-hint-actions">
+                <button type="button" className="install-hint-secondary" onClick={dismissInstallHint}>
+                  Später
+                </button>
+                <button type="button" className="install-hint-primary" onClick={dismissInstallHint}>
+                  Verstanden
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
