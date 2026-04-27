@@ -44,9 +44,9 @@ a { color: inherit; }
 /* ===== TOP BAR ===== */
 .top-bar {
   display: grid;
-  grid-template-columns: minmax(260px, 360px) 1fr auto;
+  grid-template-columns: minmax(260px, 360px) 1fr auto auto;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   padding: 14px 22px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -161,6 +161,33 @@ a { color: inherit; }
   color: #fff;
   box-shadow: var(--shadow-sm);
 }
+.view-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  border-radius: 999px;
+  padding: 0 13px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.view-toggle svg { flex: 0 0 auto; }
+.view-toggle:hover {
+  border-color: var(--ink);
+  background: var(--surface);
+}
+.view-toggle.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
 
 /* ===== CONTENT GRID ===== */
 .content-grid {
@@ -170,6 +197,32 @@ a { color: inherit; }
   padding: 18px;
   min-height: 0;
   overflow: hidden;
+}
+.app-shell.simple-view .content-grid {
+  grid-template-columns: minmax(320px, 860px);
+  justify-content: center;
+  align-content: start;
+  overflow: auto;
+}
+.app-shell.simple-view .map-stage,
+.app-shell.simple-view .departure-panel {
+  display: none;
+}
+.app-shell.simple-view .side-panel {
+  width: 100%;
+  min-height: 0;
+  max-height: none;
+}
+.app-shell.simple-view .section-block {
+  overflow: visible;
+}
+.app-shell.simple-view .section-block:nth-child(2) {
+  flex: initial;
+  min-height: auto;
+}
+.app-shell.simple-view .station-button,
+.app-shell.simple-view .favorite-departure-card {
+  padding: 14px 0;
 }
 
 /* ===== SIDE PANEL ===== */
@@ -816,6 +869,10 @@ a { color: inherit; }
   .top-filter button {
     min-width: 0;
     padding: 8px 6px;
+  }
+
+  .view-toggle {
+    width: 100%;
   }
 
   .content-grid {

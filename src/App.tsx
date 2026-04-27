@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "r
 import {
   AlertCircle,
   Clock3,
+  LayoutList,
   LocateFixed,
+  Map as MapIcon,
   MapPinned,
   RefreshCw,
   Search,
@@ -292,6 +294,7 @@ function App() {
   const [favoriteFeeds, setFavoriteFeeds] = useState<Record<string, DepartureFeed>>({});
   const [favoriteFeedError, setFavoriteFeedError] = useState<string | null>(null);
   const [selectedDepartureLine, setSelectedDepartureLine] = useState<string | null>(null);
+  const [isSimpleView, setIsSimpleView] = useState(false);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "error">("idle");
   const [mapZoom, setMapZoom] = useState(12);
@@ -467,7 +470,7 @@ function App() {
     : `Keine ${modeLabel(transportFilter)}-Abfahrten gefunden.`;
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${isSimpleView ? "simple-view" : ""}`}>
       {/* TOP HEADER BAR */}
       <header className="top-bar">
         <div className="top-brand">
@@ -505,6 +508,17 @@ function App() {
             </button>
           ))}
         </div>
+
+        <button
+          className={`view-toggle ${isSimpleView ? "active" : ""}`}
+          type="button"
+          onClick={() => setIsSimpleView((current) => !current)}
+          aria-pressed={isSimpleView}
+          title={isSimpleView ? "Kartenansicht anzeigen" : "Kompaktansicht anzeigen"}
+        >
+          {isSimpleView ? <MapIcon size={15} /> : <LayoutList size={15} />}
+          <span>{isSimpleView ? "Karte" : "Kompakt"}</span>
+        </button>
       </header>
 
       {/* CONTENT GRID */}
