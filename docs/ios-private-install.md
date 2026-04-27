@@ -11,6 +11,20 @@ Diese Variante ist fuer die private Nutzung gedacht: kein App Store, kein TestFl
 
 Wichtig: Eine echte iOS-App kostenlos geht nur mit Mac und Xcode. Ohne Mac ist die unkomplizierte kostenlose Alternative die Web-App ueber Safari zum Home-Bildschirm hinzuzufuegen.
 
+## Ohne Mac: kostenlose iPhone-Variante
+
+Wenn du nur Windows und ein iPhone hast, kannst du U-Time nicht kostenlos als signierte `.ipa` direkt installieren. Der kostenlose Weg ist die Web-App/PWA:
+
+1. U-Time auf eine HTTPS-URL deployen.
+2. Auf dem iPhone Safari oeffnen.
+3. Die U-Time-URL aufrufen.
+4. Teilen-Button antippen.
+5. `Zum Home-Bildschirm` waehlen.
+6. `Als Web-App oeffnen` aktiviert lassen.
+7. `Hinzufuegen` antippen.
+
+Das Ergebnis ist fuer private Nutzung sehr nah an einer App: eigenes Icon, Vollbild-Start und kein sichtbarer Safari-Rahmen.
+
 ## Projekt auf dem Mac vorbereiten
 
 ```bash

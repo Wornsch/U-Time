@@ -82,6 +82,17 @@ npm run lint     # ESLint-Check
 
 U-Time kann als native iOS-App mit Capacitor gebaut werden. Fuer die private, kostenlose Installation auf dem eigenen iPhone brauchst du einen Mac mit Xcode und eine normale Apple ID.
 
+Ohne Mac ist die kostenlose und unkomplizierte Variante die installierbare Web-App:
+
+1. U-Time auf eine HTTPS-URL deployen.
+2. Die URL auf dem iPhone in Safari oeffnen.
+3. Teilen-Button antippen.
+4. `Zum Home-Bildschirm` waehlen.
+5. `Open as Web App` bzw. `Als Web-App oeffnen` aktiv lassen.
+6. `Hinzufuegen` antippen.
+
+Danach liegt U-Time mit eigenem Icon auf dem Home Screen und startet ohne Safari-Chrome.
+
 Kurzfassung auf dem Mac:
 
 ```bash
